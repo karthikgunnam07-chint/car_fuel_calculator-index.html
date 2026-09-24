@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Car Fuel Cost Calculator</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: linear-gradient(135deg, #eef4ff, #f7f9fc);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    color: #172033;
+  }
+  .app {
+    width: 100%;
+    max-width: 480px;
+    background: white;
+    border-radius: 24px;
+    padding: 26px;
+    box-shadow: 0 12px 40px rgba(0,0,0,.10);
+  }
+  h1 { margin: 0 0 8px; font-size: 28px; }
+  .subtitle { margin: 0 0 24px; color: #65708a; line-height: 1.5; }
+  label {
+    display: block;
+    font-weight: 700;
+    margin: 18px 0 8px;
+  }
+  .fuel-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .fuel-buttons button {
+    border: 2px solid #dce2ed;
+    background: white;
+    color: #172033;
+    border-radius: 14px;
+    padding: 14px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .fuel-buttons button.selected {
+    border-color: #2864e8;
+    background: #eef4ff;
+  }
+  input {
+    width: 100%;
+    padding: 14px;
+    border: 2px solid #dce2ed;
+    border-radius: 14px;
+    font-size: 17px;
+    outline: none;
+  }
+  input:focus { border-color: #2864e8; }
+  .price {
+    margin-top: 8px;
+    color: #65708a;
+    font-size: 14px;
+  }
+  .calculate {
+    width: 100%;
+    margin-top: 24px;
+    padding: 16px;
+    border: 0;
+    border-radius: 15px;
+    background: #2864e8;
+    color: white;
+    font-size: 18px;
+    font-weight: 800;
+    cursor: pointer;
+  }
+  .result {
+    display: none;
+    margin-top: 22px;
+    padding: 20px;
+    border-radius: 18px;
+    background: #f0f7f1;
+    text-align: center;
+  }
+  .result.show { display: block; }
+  .result .amount {
+    font-size: 32px;
+    font-weight: 900;
+    margin: 7px 0;
+  }
+  .details { color: #526078; line-height: 1.7; }
+  .error {
+    display: none;
+    margin-top: 12px;
+    color: #b42318;
+    font-weight: 600;
+  }
+  .error.show { display: block; }
+  .footer {
+    text-align: center;
+    color: #8a93a5;
+    font-size: 12px;
+    margin-top: 20px;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <h1>🚗 Car Fuel Calculator</h1>
+  <p class="subtitle">Find out approximately how much your trip will cost in fuel.</p>
+
+  <label>Fuel type</label>
+  <div class="fuel-buttons">
+    <button id="petrolBtn" onclick="selectFuel('petrol')">Petrol</button>
+    <button id="dieselBtn" onclick="selectFuel('diesel')">Diesel</button>
+  </div>
+
+  <label for="distance">Trip distance (km)</label>
+  <input id="distance" type="number" min="0" step="0.1" placeholder="e.g. 250">
+
+  <label for="mileage">Car mileage (km/L)</label>
+  <input id="mileage" type="number" min="0" step="0.1" placeholder="e.g. 18">
+
+  <div id="priceText" class="price">Select a fuel type to see the fuel price.</div>
+
+  <button class="calculate" onclick="calculate()">Calculate fuel cost</button>
+
+  <div id="error" class="error"></div>
+
+  <div id="result" class="result">
+    <div>Estimated fuel cost</div>
+    <div class="amount" id="cost">₹0.00</div>
+    <div class="details" id="details"></div>
+  </div>
+
+  <div class="footer">Fuel prices are preset in this version.</div>
+</div>
+
+<script>
+let fuel = "";
+
+const prices = {
+  petrol: 116,
+  diesel: 103
+};
+
+function selectFuel(type) {
+  fuel = type;
+
+  document.getElementById("petrolBtn").classList.toggle("selected", type === "petrol");
+  document.getElementById("dieselBtn").classList.toggle("selected", type === "diesel");
+
+  document.getElementById("priceText").textContent =
+    "Fuel price: ₹" + prices[type] + " per litre";
+}
+
+function calculate() {
+  const distance = Number(document.getElementById("distance").value);
+  const mileage = Number(document.getElementById("mileage").value);
+  const error = document.getElementById("error");
+  const result = document.getElementById("result");
+
+  error.classList.remove("show");
+  result.classList.remove("show");
+
+  if (!fuel) {
+    showError("Please select Petrol or Diesel.");
+    return;
+  }
+
+  if (!distance || distance <= 0) {
+    showError("Please enter a valid distance.");
+    return;
+  }
+
+  if (!mileage || mileage <= 0) {
+    showError("Please enter a valid mileage.");
+    return;
+  }
+
+  const price = prices[fuel];
+
+  // Same calculation as your Python program:
+  // distance / mileage × fuel price
+  const litresNeeded = distance / mileage;
+  const cost = litresNeeded * price;
+
+  document.getElementById("cost").textContent =
+    "₹" + cost.toFixed(2);
+
+  document.getElementById("details").innerHTML =
+    "Distance: " + distance + " km<br>" +
+    "Mileage: " + mileage + " km/L<br>" +
+    "Fuel needed: " + litresNeeded.toFixed(2) + " L<br>" +
+    "Fuel price: ₹" + price + "/L";
+
+  result.classList.add("show");
+}
+
+function showError(message) {
+  const error = document.getElementById("error");
+  error.textContent = message;
+  error.classList.add("show");
+}
+</script>
+</body>
+</html>
